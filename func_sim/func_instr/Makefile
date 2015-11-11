@@ -18,7 +18,7 @@ vpath %.cpp $(TRUNK)/func_sim/func_memory/
 
 # option for C++ compiler specifying directories 
 # to search for headers
-INCL= -I ./ -I $(TRUNK)/common/ -I $(TRUNK)/func_sim/elf_parser/ -I $(TRUNK)/func_sim/func_memory/ 
+INCL= -I ./ -I $(TRUNK)/common/ -I $(TRUNK)/func_sim/elf_parser/ -I $(TRUNK)/func_sim/func_memory/ -I /usr/local/include/libelf
 
 #options for static linking of boost Unit Test library
 INCL_GTEST= -I $(TRUNK)/libs/gtest-1.6.0/include
