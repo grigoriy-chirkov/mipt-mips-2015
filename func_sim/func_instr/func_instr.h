@@ -26,6 +26,7 @@ class FuncInstr
 private:
     enum Format
     {
+        NO_FORMAT = 0,
         FORMAT_R,
         FORMAT_I,
         FORMAT_J
@@ -33,6 +34,7 @@ private:
     
     enum Type
     {
+        NO_TYPE = 0,
         ADD, SUB, MUL, DIV,
         MOV,
         SH,
@@ -95,9 +97,10 @@ private:
         FuncInstr::Format format;
         FuncInstr::Type type;
     };
-    static const ISAEntry isaTable[];
+    static const ISAEntry isa_table[];
     
     FuncInstr();
+    unsigned isa_table_num;
     
 public:
     FuncInstr( uint32 bytes);
