@@ -1,5 +1,5 @@
 /**
- * disasm.cpp - the module implementing the MIPS disassembler.
+ * disasm.cpp - MIPS disassembler.
  * @author Grigoriy Chirkov <grigoriy.chirkov@phystech.edu>
  * Copyright 2015 MIPT-MIPS iLab project
  */
@@ -19,6 +19,7 @@
 #include "func_memory.h"
 
 #define WORD 4
+#define ADDR_WIDTH 8
 
 int main( int argc, const char* argv[])
 {
@@ -65,9 +66,9 @@ int main( int argc, const char* argv[])
         }
         FuncInstr cur_instr( bytes);
         cout << hex << "0x";
-        cout.width(8);
+        cout.width(ADDR_WIDTH);
         cout << sect.start_addr + pos << ":      0x";
-        cout.width(8);
+        cout.width(ADDR_WIDTH);
         cout << bytes << "        " << cur_instr << endl;
     }
     return 0;

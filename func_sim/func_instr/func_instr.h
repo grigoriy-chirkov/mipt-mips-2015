@@ -1,6 +1,5 @@
 /**
- * func_instr.h - Header of modules implementing the MIPS assembler
- * and disassembler.
+ * func_instr.h - Header of module implementing the FuncInstr class
  * @author Grigoriy Chirkov <grigoriy.chirkov@phystech.edu>
  * Copyright 2015 MIPT-MIPS iLab project
  */
@@ -31,7 +30,6 @@ private:
         FORMAT_I,
         FORMAT_J
     } format;
-    
     enum Type
     {
         NO_TYPE = 0,
@@ -43,7 +41,6 @@ private:
         LD, STR,
         INT
     };
-    
     enum Reg
     {
         $zero,
@@ -60,12 +57,12 @@ private:
         $ra,
         NOREG
     };
-
     enum OutFormat
     {
         dst_OUT, tsC_OUT, st_OUT, d_OUT, s_OUT, dtS_OUT, dts_OUT,
         tC_OUT, stC_OUT, sC_OUT, A_OUT, tC_s_OUT, NO_OUT  
     };
+    
     union
     {
         struct
