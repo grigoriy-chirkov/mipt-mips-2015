@@ -60,29 +60,34 @@ private:
         $ra,
         NOREG
     };
-    
+
+    enum OutFormat
+    {
+        dst_OUT, tsC_OUT, st_OUT, d_OUT, s_OUT, dtS_OUT, dts_OUT,
+        tC_OUT, stC_OUT, sC_OUT, A_OUT, tC_s_OUT, NO_OUT  
+    };
     union
     {
         struct
         {
-            unsigned opcode:6;
-            unsigned s_reg:5;
-            unsigned t_reg:5;
             unsigned imm:16;
+            unsigned t_reg:5;
+            unsigned s_reg:5;
+            unsigned opcode:6;
         } asI;
         struct
         {
-            unsigned opcode:6;
-            unsigned s_reg:5;
-            unsigned t_reg:5;
-            unsigned d_reg:5;
-            unsigned shamt:5;
             unsigned func:6;
+            unsigned shamt:5;
+            unsigned d_reg:5;
+            unsigned t_reg:5;
+            unsigned s_reg:5;
+            unsigned opcode:6;
         } asR;
         struct
         {
-            unsigned opcode:6;
             unsigned offset:26;
+            unsigned opcode:6;
         } asJ;
         uint32 raw;
     } bytes;
@@ -96,9 +101,12 @@ private:
         
         FuncInstr::Format format;
         FuncInstr::Type type;
+        FuncInstr::OutFormat out_format;
     };
+   
     static const ISAEntry isa_table[];
-    
+    static const char* reg_name[];
+
     FuncInstr();
     unsigned isa_table_num;
     
