@@ -15,14 +15,101 @@
 // MIPT-MIPS modules
 #include <types.h>
 #include <elf_parser.h>
+#include <func_sim.h>
+
+enum RegNum : unsigned short;
 
 class FuncInstr
 {
     public:
-        FuncInstr( uint32 bytes);
+        friend class MIPS;
+    
+        FuncInstr( uint32 bytes, uint32 PC = 0);
         std::string Dump( std::string indent = " ") const;
+    
+        RegNum get_src_num_index() const;
+        RegNum get_trg_num_index() const;
+        RegNum get_dst_num_index() const;
+    
+        /* Operations */
+    
+        // Add/subtract
+        void add();
+        void sub();
+        void addi();
+        void addu();
+        void subu();
+        void addiu();
+        // Multiplication/division
+        void mul();
+        void div();
+        void mfhi();
+        void mthi();
+        void mflo();
+        void mtlo();
+        void mulu();
+        void divu();
+        // Shifts
+        void sll();
+        void srl();
+        void sra();
+        void sllv();
+        void srlv();
+        void srav();
+        void lui();
+        // Comparisons
+        void slt();
+        void sltu();
+        void slti();
+        void sltiu();
+        // Logical operations
+        void _and();
+        void _or();
+        void _xor();
+        void nor();
+        void andi();
+        void xori();
+        void ori();
+        // Conditional branches
+        void beq();
+        void bne();
+        void blez();
+        void bgtz();
+        // Unconditional jump
+        void jump();
+        void jal();
+        void jr();
+        void jalr();
+        // Loads
+        void lb();
+        void lh();
+        void lw();
+        void lbu();
+        void lhu();
+        // Stores
+        void sb();
+        void sh();
+        void sw();
+        // Special instructions
+        void syscall();
+        void _break();
+        void trap();
 
+        void execute();
+    
     private:
+        const uint32 PC;
+        uint32 v_src;
+        uint32 v_trg;
+        uint32 v_dst;
+        uint32 HI;
+        uint32 LO;
+        uint32 ra_reg;
+        uint32 imm;
+        uint32 mem_addr;
+        uint32 new_PC;
+        uint32 shamt;
+    
         enum Format
         {
             FORMAT_R,
@@ -84,6 +171,7 @@ class FuncInstr
 
             Format format;
             OperationType operation;
+            void (*func_addr)(void);
         };
         uint32 isaNum;
 
