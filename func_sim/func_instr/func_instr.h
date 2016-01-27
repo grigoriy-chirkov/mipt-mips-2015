@@ -121,6 +121,8 @@ class FuncInstr
         {
             OUT_R_ARITHM,
             OUT_R_SHAMT,
+            OUT_R_SHIFT,
+            OUT_R_COMP,
             OUT_R_JUMP,
             OUT_R_SPECIAL,
             OUT_R_THILO,
@@ -128,6 +130,8 @@ class FuncInstr
             OUT_R_MUL,
             OUT_I_ARITHM,
             OUT_I_BRANCH,
+            OUT_I_ZEROBR,
+            OUT_I_LUI,
             OUT_I_LOAD,
             OUT_I_STORE,
             OUT_J_JUMP,

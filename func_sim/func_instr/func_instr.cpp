@@ -27,19 +27,19 @@ const FuncInstr::ISAEntry FuncInstr::isaTable[] =
     { "multu",  0x0, 0x19,  FORMAT_R, OUT_R_MUL,    &FuncInstr::multu },
     { "div",    0x0, 0x1A,  FORMAT_R, OUT_R_MUL,    &FuncInstr::div },
     { "divu",   0x0, 0x1B,  FORMAT_R, OUT_R_MUL,    &FuncInstr::divu },
-    { "mfhi",   0x0, 0x10,  FORMAT_R, OUT_R_FHILO,   &FuncInstr::mfhi },
-    { "mthi",   0x0, 0x11,  FORMAT_R, OUT_R_THILO,   &FuncInstr::mthi },
-    { "mflo",   0x0, 0x12,  FORMAT_R, OUT_R_FHILO,   &FuncInstr::mflo },
-    { "mtlo",   0x0, 0x13,  FORMAT_R, OUT_R_THILO,   &FuncInstr::mtlo },
+    { "mfhi",   0x0, 0x10,  FORMAT_R, OUT_R_FHILO,  &FuncInstr::mfhi },
+    { "mthi",   0x0, 0x11,  FORMAT_R, OUT_R_THILO,  &FuncInstr::mthi },
+    { "mflo",   0x0, 0x12,  FORMAT_R, OUT_R_FHILO,  &FuncInstr::mflo },
+    { "mtlo",   0x0, 0x13,  FORMAT_R, OUT_R_THILO,  &FuncInstr::mtlo },
     { "sll",    0x0, 0x0,   FORMAT_R, OUT_R_SHAMT,  &FuncInstr::sll },
     { "srl",    0x0, 0x2,   FORMAT_R, OUT_R_SHAMT,  &FuncInstr::srl },
     { "sra",    0x0, 0x3,   FORMAT_R, OUT_R_SHAMT,  &FuncInstr::sra },
-    { "sllv",   0x0, 0x4,   FORMAT_R, OUT_R_ARITHM, &FuncInstr::sllv },
-    { "srlv",   0x0, 0x6,   FORMAT_R, OUT_R_ARITHM, &FuncInstr::srlv },
-    { "srav",   0x0, 0x7,   FORMAT_R, OUT_R_ARITHM, &FuncInstr::srav },
-    { "lui",    0xF, 0x0,   FORMAT_I, OUT_I_ARITHM, &FuncInstr::lui },
-    { "slt",    0x0, 0x2A,  FORMAT_R, OUT_R_ARITHM, &FuncInstr::slt },
-    { "sltu",   0x0, 0x2B,  FORMAT_R, OUT_R_ARITHM, &FuncInstr::sltu },
+    { "sllv",   0x0, 0x4,   FORMAT_R, OUT_R_SHIFT,  &FuncInstr::sllv },
+    { "srlv",   0x0, 0x6,   FORMAT_R, OUT_R_SHIFT,  &FuncInstr::srlv },
+    { "srav",   0x0, 0x7,   FORMAT_R, OUT_R_SHIFT,  &FuncInstr::srav },
+    { "lui",    0xF, 0x0,   FORMAT_I, OUT_I_LUI,    &FuncInstr::lui },
+    { "slt",    0x0, 0x2A,  FORMAT_R, OUT_R_COMP,   &FuncInstr::slt },
+    { "sltu",   0x0, 0x2B,  FORMAT_R, OUT_R_COMP,   &FuncInstr::sltu },
     { "slti",   0xA, 0x0,   FORMAT_I, OUT_I_ARITHM, &FuncInstr::slti },
     { "sltiu",  0xB, 0x0,   FORMAT_I, OUT_I_ARITHM, &FuncInstr::sltiu },
     { "and",    0x0, 0x24,  FORMAT_R, OUT_R_ARITHM, &FuncInstr::_and },
@@ -51,8 +51,8 @@ const FuncInstr::ISAEntry FuncInstr::isaTable[] =
     { "xori",   0xE, 0x0,   FORMAT_I, OUT_I_ARITHM, &FuncInstr::xori },
     { "beq",    0x4, 0x0,   FORMAT_I, OUT_I_BRANCH, &FuncInstr::beq },
     { "bne",    0x5, 0x0,   FORMAT_I, OUT_I_BRANCH, &FuncInstr::bne },
-    { "blez",   0x6, 0x0,   FORMAT_I, OUT_I_BRANCH, &FuncInstr::blez },
-    { "bgtz",   0x7, 0x0,   FORMAT_I, OUT_I_BRANCH, &FuncInstr::bgtz },
+    { "blez",   0x6, 0x0,   FORMAT_I, OUT_I_ZEROBR, &FuncInstr::blez },
+    { "bgtz",   0x7, 0x0,   FORMAT_I, OUT_I_ZEROBR, &FuncInstr::bgtz },
     { "jal",    0x3, 0x0,   FORMAT_J, OUT_J_JUMP,   &FuncInstr::jal },
     { "j",      0x2, 0x0,   FORMAT_J, OUT_J_JUMP,   &FuncInstr::jump },
     { "jr",     0x0, 0x8,   FORMAT_R, OUT_R_JUMP,   &FuncInstr::jr },
@@ -121,7 +121,8 @@ std::string FuncInstr::Dump( std::string indent) const
     switch ( operation)
     {
         case OUT_R_ARITHM:
-            oss << " [0x" << setw( 8) << v_dst << "], $"
+            oss << " $" << regTable[instr.asR.rd]
+                << " [0x" << setw( 8) << v_dst << "], $"
                 << regTable[instr.asR.rs]
                 << " [0x" << setw( 8) << v_src << "], $"
                 << regTable[instr.asR.rt]
@@ -133,6 +134,14 @@ std::string FuncInstr::Dump( std::string indent) const
                 << regTable[instr.asR.rt]
                 << " [0x" << setw( 8) << v_trg << "], "
                 << dec << instr.asR.shamt << hex;
+            break;
+        case OUT_R_SHIFT:
+            oss << " $" << regTable[instr.asR.rd]
+                << " [0x" << setw( 8) << v_dst << "], $"
+                << regTable[instr.asR.rt]
+                << " [0x" << setw( 8) << v_trg << "], $"
+                << regTable[instr.asR.rs]
+                << " [0x" << setw( 8) << v_src << "]";
             break;
         case OUT_R_JUMP:
             oss << " $" << regTable[instr.asR.rs]
@@ -155,6 +164,14 @@ std::string FuncInstr::Dump( std::string indent) const
                 << regTable[instr.asR.rt]
                 << " [0x" << setw( 8) << v_trg << "]";
             break;
+        case OUT_R_COMP:
+            oss << " $" << regTable[instr.asR.rd]
+                << " [0x" << setw( 8) << v_dst << "], $"
+                << regTable[instr.asR.rs]
+                << " [0x" << setw( 8) << v_src << "], $"
+                << regTable[instr.asR.rt]
+                << " [0x" << setw( 8) << v_trg << "]";
+            break;
         case OUT_R_SPECIAL:
             break;
         case OUT_I_ARITHM:
@@ -171,6 +188,11 @@ std::string FuncInstr::Dump( std::string indent) const
                 << " [0x" << setw( 8) << v_trg << "], "
                 << "0x" << static_cast< signed int>( instr.asI.imm);
             break;
+        case OUT_I_ZEROBR:
+            oss << " $" << regTable[instr.asI.rs]
+                << " [0x" << setw( 8) << v_src << "], "
+                << "0x" << static_cast< signed int>( instr.asI.imm);
+            break;
         case OUT_I_LOAD:
             oss << " $" << regTable[instr.asI.rt]
                 << " [0x" << setw( 8) << v_trg << "], "
@@ -184,6 +206,11 @@ std::string FuncInstr::Dump( std::string indent) const
                 << "0x" << static_cast< signed int>( instr.asI.imm)
                 << "($" << regTable[instr.asI.rs]
                 << " [0x" << setw( 8) << v_src << "]" << ")";
+            break;
+        case OUT_I_LUI:
+            oss << " $" << regTable[instr.asI.rt]
+                << " [0x" << setw( 8) << v_trg << "], "
+                << "0x" << static_cast< signed int>( instr.asI.imm);
             break;
         case OUT_J_JUMP:
             oss << " " << "0x" << instr.asJ.imm;
@@ -392,7 +419,7 @@ void FuncInstr::addiu()
 // Multiplication/division
 void FuncInstr::mult()
 {
-    int64 res = ( int32)v_src * ( int32) v_trg;
+    int64 res = ( int64)( ( int32)v_src) * ( int64)( ( int32) v_trg);
     LO = ( uint32) ( res & 0xffffffff);
     HI = ( uint32) ( res >> 0x20);
 }
@@ -427,7 +454,7 @@ void FuncInstr::mflo()
 
 void FuncInstr::multu()
 {
-    uint64 res = v_src * v_trg;
+    uint64 res = ( uint64) v_src * ( uint64) v_trg;
     LO = res & 0xffffffff;
     HI = res >> 0x20;
 }
@@ -488,7 +515,7 @@ void FuncInstr::sltu()
 
 void FuncInstr::slti()
 {
-    v_trg = ( ( int32)v_src < ( int32)imm);
+    v_trg = ( ( int32)v_src < ( int32)( ( int16)imm));
 }
 
 void FuncInstr::sltiu()
@@ -537,7 +564,7 @@ void FuncInstr::beq()
 {
     if ( v_src == v_trg)
     {
-        new_PC += ( imm << 2);
+        new_PC += ( ( int32)( ( int16)imm) << 2);
     }
 }
 
@@ -545,7 +572,7 @@ void FuncInstr::bne()
 {
     if ( v_src != v_trg)
     {
-        new_PC += ( imm << 2);
+        new_PC += ( ( int32)( ( int16)imm) << 2);
     }
 }
 
@@ -553,7 +580,7 @@ void FuncInstr::blez()
 {
     if ( v_src <= 0)
     {
-        new_PC += ( imm << 2);
+        new_PC += ( ( int32)( ( int16)imm) << 2);
     }
 }
 
@@ -561,7 +588,7 @@ void FuncInstr::bgtz()
 {
     if ( v_src > 0)
     {
-        new_PC += ( imm << 2);
+        new_PC += ( ( int32)( ( int16)imm) << 2);
     }
 }
 

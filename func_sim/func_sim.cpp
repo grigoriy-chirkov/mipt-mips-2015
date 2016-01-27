@@ -85,23 +85,23 @@ void MIPS::load( FuncInstr& instr)
     uint32 res = mem->read( instr.mem_addr);
     uint32 sign = ( ( int32)res < 0);
 
-    
+
     switch ( instr.isaTable[instr.isaNum].opcode)
     {
         case WORD_LD_OPCODE:
             instr.v_trg = res;
             break;
         case BYTE_LD_OPCODE:
-            instr.v_trg = ( uint8) res | ( sign << ( BYTE_SIZE - 1));
+            instr.v_trg = ( ( int32)res) >> ( 3*BYTE_SIZE);
             break;
         case HALF_LD_OPCODE:
-            instr.v_trg = ( uint16) res | ( sign << ( 2*BYTE_SIZE - 1));
+            instr.v_trg = ( ( int32)res) >> ( 2*BYTE_SIZE);
             break;
         case HALF_LD_UNS_OPCODE:
-            instr.v_trg = ( uint16) res;
+            instr.v_trg = res >> 2*BYTE_SIZE;
             break;
         case BYTE_LD_UNS_OPCODE:
-            instr.v_trg = ( uint8) res;
+            instr.v_trg = res >> 3*BYTE_SIZE;
             break;
         default:
             break;
@@ -116,10 +116,10 @@ void MIPS::store( const FuncInstr& instr)
             mem->write( instr.v_trg, instr.mem_addr);
             break;
         case HALF_ST_OPCODE:
-            mem->write( instr.v_trg, instr.mem_addr, 2);
+            mem->write( ( instr.v_trg & 0xffff), instr.mem_addr, 2);
             break;
         case BYTE_ST_OPCODE:
-            mem->write( instr.v_trg, instr.mem_addr, 1);
+            mem->write( ( instr.v_trg & 0xff), instr.mem_addr, 1);
             break;
         default:
             break;
@@ -148,7 +148,9 @@ uint32 MIPS::fetch() const
 
 void MIPS::updatePC( const FuncInstr& instr)
 {
+    //cout << "PC:" << hex << PC << endl;
     PC = instr.new_PC;
+    //cout << "new_PC:" << PC << endl;
 }
 
 uint32 RF::read( RegNum index) const
@@ -188,4 +190,3 @@ void RF::write_LO( uint32 val)
 {
     LO = val;
 }
-
