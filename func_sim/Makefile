@@ -25,23 +25,23 @@ INCL= -I ./ -I $(TRUNK)/common/ -I $(TRUNK)/func_sim/elf_parser/ -I $(TRUNK)/fun
 #
 # Enter for building funcsim stand alone program
 #
-funcsim: func_sim.o func_memory.o elf_parser.o func_instr.o
+funcsim: main.cpp func_sim.o func_memory.o elf_parser.o func_instr.o
 	@# don't forget to link ELF library using "-l elf"
-	$(CXX) -o $@ $^ -l elf -std=c++11
+	$(CXX) -o $@ $^ $(INCL) -l elf -std=c++0x
 	@echo "---------------------------------"
 	@echo "$@ is built SUCCESSFULLY"
 
 func_sim.o: func_sim.cpp func_sim.h types.h
-	$(CXX) -c $< $(INCL) -std=c++11
+	$(CXX) -c $< $(INCL) -std=c++0x
 
 func_instr.o: func_instr.cpp func_instr.h types.h
-	$(CXX) -c $< $(INCL) -std=c++11
+	$(CXX) -c $< $(INCL) -std=c++0x
     
 func_memory.o: func_memory.cpp func_memory.h types.h
-	$(CXX) -c $< $(INCL) -std=c++11
+	$(CXX) -c $< $(INCL) -std=c++0x
 
 elf_parser.o: elf_parser.cpp elf_parser.h types.h
-	$(CXX) -c $< $(INCL)
+	$(CXX) -c $< $(INCL) -std=c++0x
 
 clean:
 	@-rm *.o

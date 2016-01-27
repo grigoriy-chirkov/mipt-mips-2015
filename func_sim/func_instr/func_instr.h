@@ -15,24 +15,23 @@
 // MIPT-MIPS modules
 #include <types.h>
 #include <elf_parser.h>
-#include <func_sim.h>
 
-enum RegNum : unsigned short;
+//enum class RegNum : unsigned short;
 
 class FuncInstr
 {
     public:
         friend class MIPS;
-    
+
         FuncInstr( uint32 bytes, uint32 PC = 0);
         std::string Dump( std::string indent = " ") const;
-    
-        RegNum get_src_num_index() const;
-        RegNum get_trg_num_index() const;
-        RegNum get_dst_num_index() const;
-    
+
+        int get_src_num_index() const;
+        int get_trg_num_index() const;
+        int get_dst_num_index() const;
+
         /* Operations */
-    
+
         // Add/subtract
         void add();
         void sub();
@@ -41,13 +40,13 @@ class FuncInstr
         void subu();
         void addiu();
         // Multiplication/division
-        void mul();
+        void mult();
         void div();
         void mfhi();
         void mthi();
         void mflo();
         void mtlo();
-        void mulu();
+        void multu();
         void divu();
         // Shifts
         void sll();
@@ -96,7 +95,7 @@ class FuncInstr
         void trap();
 
         void execute();
-    
+
     private:
         const uint32 PC;
         uint32 v_src;
@@ -109,7 +108,7 @@ class FuncInstr
         uint32 mem_addr;
         uint32 new_PC;
         uint32 shamt;
-    
+
         enum Format
         {
             FORMAT_R,
@@ -124,6 +123,9 @@ class FuncInstr
             OUT_R_SHAMT,
             OUT_R_JUMP,
             OUT_R_SPECIAL,
+            OUT_R_THILO,
+            OUT_R_FHILO,
+            OUT_R_MUL,
             OUT_I_ARITHM,
             OUT_I_BRANCH,
             OUT_I_LOAD,
@@ -171,7 +173,7 @@ class FuncInstr
 
             Format format;
             OperationType operation;
-            void (*func_addr)(void);
+            void (FuncInstr::*func_addr)(void);
         };
         uint32 isaNum;
 
@@ -180,7 +182,7 @@ class FuncInstr
         static const char *regTable[];
 
         std::string disasm;
-                                                               
+
         void initFormat();
         void initR();
         void initI();
@@ -191,4 +193,3 @@ class FuncInstr
 std::ostream& operator<<( std::ostream& out, const FuncInstr& instr);
 
 #endif //FUNC_INSTR_H
-
