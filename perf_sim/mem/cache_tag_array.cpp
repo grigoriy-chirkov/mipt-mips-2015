@@ -14,15 +14,14 @@
 
 using namespace std;
 
-CacheTagArray::CacheTagArray( uint64 size_in_bytes,
-                              unsigned int ways,
+CacheTagArray::CacheTagArray( unsigned size_in_bytes,
+                              unsigned ways,
                               unsigned short block_size_in_bytes,
                               unsigned short addr_size_in_bits    ):
 size_in_bytes( size_in_bytes), ways( ways),
 block_size_in_bytes( block_size_in_bytes),
 addr_size_in_bits( addr_size_in_bits)
 {
-    
     assert( block_size_in_bytes);
     assert( ways);
     assert( size_in_bytes);
@@ -30,6 +29,7 @@ addr_size_in_bits( addr_size_in_bits)
     
     way_size = size_in_bytes / ways;
     n_of_sets = way_size / block_size_in_bytes;
+    
     
     block_size_in_bits = ilogb( block_size_in_bytes);
     set_size_in_bits = ilogb( n_of_sets);
@@ -44,18 +44,19 @@ addr_size_in_bits( addr_size_in_bits)
     tag_arrays = new ( std::nothrow) TagArrayEntry*[ n_of_sets];
     assert( tag_arrays);
     
-    for ( int i = 0; i < n_of_sets; i++)
+    for ( unsigned set = 0; set < n_of_sets; set++)
     {
-        tag_arrays[i] = new ( std::nothrow) TagArrayEntry[ ways];
-        assert( tag_arrays[i]);
+        tag_arrays[ set] = new ( std::nothrow) TagArrayEntry[ ways];
+        assert( tag_arrays[ set]);
     }
+    last_addr = 0;
 }
 
 CacheTagArray::~CacheTagArray()
 {
-    for ( int i = 0; i < n_of_sets; i++)
+    for ( unsigned set = 0; set < n_of_sets; set++)
     {
-        delete tag_arrays[i];
+        delete tag_arrays[set];
     }
     delete tag_arrays;
 }
@@ -64,20 +65,25 @@ bool CacheTagArray::read( uint64 addr)
 {
     assert( addr <= max_addr);
     uint64 tag = getTag( addr);
-    uint64 set = getSet( addr);
+    unsigned set = getSet( addr);
     bool success = false;
-    for ( unsigned i = 0; i < ways; i++)
+    for ( unsigned way = 0; way < ways; way++)
     {
-        TagArrayEntry& tag_entry = tag_arrays[set][i];
+        TagArrayEntry& tag_entry = tag_arrays[set][way];
         tag_entry.incCounter();
         if ( tag_entry == tag)
         {
             tag_entry.resetCounter();
             success = true;
+            last_tag_hitted = true;
         }
     }
     if ( !success)
+    {
         write( addr);
+        last_tag_hitted = false;
+    }
+    last_addr = addr;
     return success;
 }
 
@@ -85,8 +91,8 @@ void CacheTagArray::write( uint64 addr)
 {
     assert( addr <= max_addr);
     uint64 tag = getTag( addr);
-    uint64 set = getSet( addr);
-    uint64 way = findLRU( set);
+    unsigned set = getSet( addr);
+    unsigned way = findLRU( set);
     tag_arrays[set][way] = tag;
 }
 
@@ -98,10 +104,10 @@ uint64 CacheTagArray::getTag( uint64 addr)
     return res;
 }
 
-uint64 CacheTagArray::getSet( uint64 addr)
+unsigned CacheTagArray::getSet( uint64 addr)
 {
     assert( addr <= max_addr);
-    uint64 res = ( addr >> block_size_in_bits) & max_set;
+    unsigned res = ( addr >> block_size_in_bits) & max_set;
     assert( res <= max_set);
     return res;
 }
@@ -118,37 +124,36 @@ bool TagArrayEntry::operator == ( uint64 tag)
 }
 
 
-uint64 CacheTagArray::findLRU( uint64 set)
+unsigned CacheTagArray::findLRU( unsigned set)
 {
     assert( set < n_of_sets);
-    uint64 res = 0;
-    for ( unsigned i = 1; i < ways; i++)
-        if ( tag_arrays[set][res].isFresher( tag_arrays[set][i]))
-            res = i;
+    unsigned res = 0;
+    for ( unsigned way = 1; way < ways; way++)
+        if ( tag_arrays[set][res].isFresher( tag_arrays[set][way]))
+            res = way;
     return res;
 }
 
 string CacheTagArray::Dump()
 {
     ostringstream oss;
-    for ( uint64 i = 0; i < n_of_sets; i++)
+    oss << "-----------------------------------------" << endl;
+    oss << "CacheTagArray Dump" << endl;
+    oss << "Size of cache: " << ( size_in_bytes >> 10) << "KB" << endl;
+    oss << "Ways: " << ways << endl;
+    oss << "Block size in bytes: " << block_size_in_bytes << endl;
+    oss << "Address size in bits: " << addr_size_in_bits << ", consists of:" << endl;
+    oss << "Tag: " << tag_size_in_bits << " bits, "
+        << "Set: " << set_size_in_bits << " bits, "
+        << "Offset: " << block_size_in_bits << " bits." << endl;
+    if ( last_tag_hitted)
     {
-        for ( uint j = 0; j < ways; j++)
-        {
-            oss << tag_arrays[i][j] << "\t";
-        }
-        oss << endl;
+        oss << "Last read was cache hit, in addr: " ;
+    } else
+    {
+        oss << "Last read was cache miss, in addr: ";
     }
+    oss << hex << "0x" << last_addr << endl;
+    oss << "End of dump" << endl << "-----------------------------------------" << endl;
     return oss.str();
 }
-
-string TagArrayEntry::Dump()
-{
-    ostringstream oss;
-    oss << hex << "0x" << setw( 8) << setfill( '0') << tag << ":" << dec << counter;
-    return oss.str();
-}
-
-
-
-

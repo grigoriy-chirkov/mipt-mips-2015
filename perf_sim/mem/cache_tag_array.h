@@ -10,8 +10,6 @@
 #include <new>
 #include <iostream>
 
-using namespace std;
-
 class TagArrayEntry;
 
 class CacheTagArray
@@ -29,10 +27,10 @@ public:
      *
      * 4) addr_size_in_bit is a number of bits in the physical address.
      */
-    CacheTagArray( uint64 size_in_bytes,
-                   unsigned int ways,
+    CacheTagArray( unsigned size_in_bytes,
+                   unsigned ways,
                    unsigned short block_size_in_bytes = 4,
-                   unsigned short addr_size_in_bits = 32);
+                   unsigned short addr_size_in_bits = 32  );
     /**
      * Return true if the byte with the given address is stored in the cache,
      * otherwise, return false.
@@ -55,30 +53,31 @@ public:
     string Dump();
 private:
     CacheTagArray();
-    uint64 size_in_bytes;
-    unsigned int ways;
+    unsigned size_in_bytes;
+    unsigned ways;
     unsigned short block_size_in_bytes;
     unsigned short addr_size_in_bits;
     
-    uint64 way_size;
+    unsigned way_size;
     unsigned n_of_sets;
     
-    unsigned block_size_in_bits;
-    unsigned set_size_in_bits;
-    unsigned tag_size_in_bits;
+    unsigned short block_size_in_bits;
+    unsigned short set_size_in_bits;
+    unsigned short tag_size_in_bits;
     
     uint64 max_addr;
     uint64 max_tag;
-    uint64 max_set;
+    unsigned max_set;
+    
+    bool last_tag_hitted;
+    uint64 last_addr;
     
     TagArrayEntry** tag_arrays;
     
-    
     inline uint64 getTag( uint64 addr);
-    inline uint64 getSet( uint64 addr);
-    uint64 findLRU( uint64 set);
-    void loadTag( uint64 tag, uint64 set);
-
+    inline unsigned getSet( uint64 addr);
+    unsigned findLRU( unsigned set);
+    void loadTag( uint64 tag, unsigned set);
 };
 
 
@@ -87,7 +86,7 @@ class TagArrayEntry
 {
 private:
     uint64 tag;
-    uint64 counter;
+    unsigned counter;
 public:
     TagArrayEntry(): tag( 0), counter( 0) {};
     void operator = ( uint64 tag);
@@ -96,9 +95,6 @@ public:
     void incCounter() { counter++; };
     bool isFresher( TagArrayEntry& comp_tag)
     { return this->counter < comp_tag.counter; };
-    string Dump();
-    friend ostream& operator << ( ostream& stream, TagArrayEntry& obj)
-    { return stream << obj.Dump(); }
 };
 
 
