@@ -9,6 +9,7 @@
 #include <types.h>
 #include <new>
 #include <iostream>
+#include <string>
 
 class TagArrayEntry;
 
@@ -50,7 +51,7 @@ public:
      */
     void write( uint64 addr);
     ~CacheTagArray();
-    string Dump();
+    std::string Dump();
 private:
     CacheTagArray();
     unsigned size_in_bytes;

@@ -3,7 +3,6 @@
 #include <fstream>
 #include <vector>
 #include <cassert>
-#include <thread>
 
 const unsigned MIN_SIZE_IN_KB = 1;
 const unsigned MIN_SIZE = MIN_SIZE_IN_KB * 1024;
@@ -79,6 +78,7 @@ int main( const int argc, const char* argv[])
                     misses++;
             }
             output << misses/( hits + misses)<< "; ";
+            cout << tag_array.Dump();
         }
         output << "\r\n";
     }
